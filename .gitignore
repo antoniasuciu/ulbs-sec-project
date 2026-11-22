@@ -1,0 +1,4 @@
+
+# Secrete decriptate local (nu se urca niciodata in Git)
+infra/.env
+infra/secrets.env

@@ -1,0 +1,24 @@
+title: Suspicious Outbound C2 Communication Enriched via MISP/Shodan
+id: 7a8b9c0d-1234-4e5f-8a9b-0c1d2e3f4a5b
+status: experimental
+description: Detects outbound network connections to IPs flagged with known C2 ports or vulnerabilities in Shodan/MISP enrichment.
+author: Antonia Suciu
+date: 2026/11/22
+logsource:
+    category: network_connection
+    product: linux
+detection:
+    selection_ports:
+        destination.port:
+            - 4444
+            - 1337
+            - 8443
+    selection_enrichment:
+        tags|contains: 'shodan_vuln_detected'
+    condition: selection_ports or selection_enrichment
+falsepositives:
+    - Legitimate administrative traffic over port 8443
+level: high
+tags:
+    - attack.command_and_control
+    - attack.t1071

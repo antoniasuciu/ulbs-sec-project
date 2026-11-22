@@ -1,0 +1,16 @@
+{
+  "contextFileName": "GEMINI.md",
+  "coreTools": [
+    "ReadFileTool",
+    "WriteFileTool",
+    "EditTool",
+    "GlobTool",
+    "GrepTool"
+  ],
+  "excludeTools": [
+    "ShellTool(rm -rf)",
+    "ShellTool(git push --force)",
+    "ShellTool(git push -f)",
+    "ShellTool(sudo)"
+  ]
+}

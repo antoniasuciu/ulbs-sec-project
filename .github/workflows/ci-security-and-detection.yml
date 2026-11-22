@@ -1,0 +1,54 @@
+name: Security Governance & Detection CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ feat/* ]
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Gitleaks Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  iac-security-audit:
+    name: Docker Compose Security Audit (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.4.0
+        with:
+          python-version: '3.12'
+      - name: Install and run Checkov on infra/
+        run: |
+          pip install checkov
+          checkov -d infra/ --framework yaml --check CKV_DOCKER_1,CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_7,CKV_DOCKER_8,CKV_DOCKER_9,CKV_DOCKER_10,CKV_DOCKER_11
+
+  detection-validation:
+    name: Validate Sigma Rules & Detection Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.4.0
+        with:
+          python-version: '3.12'
+      - name: Install dependencies and run detection tests
+        run: |
+          pip install pyyaml
+          python3 detection/tests/test_detection.py
