@@ -1,0 +1,61 @@
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.17.1
+    container_name: siem-opensearch
+    environment:
+      - cluster.name=ulbs-siem-cluster
+      - node.name=opensearch-node1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD}
+      - DISABLE_SECURITY_PLUGIN=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - siem-net
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.17.1
+    container_name: siem-dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    depends_on:
+      - opensearch
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - siem-net
+
+  logstash:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:8.13.4
+    container_name: siem-logstash
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+      - SHODAN_API_KEY=${SHODAN_API_KEY}
+      - MISP_URL=${MISP_URL}
+      - MISP_KEY=${MISP_KEY}
+    ports:
+      - "5044:5044"
+      - "8080:8080"
+    depends_on:
+      - opensearch
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - siem-net
+
+networks:
+  siem-net:
+    driver: bridge
