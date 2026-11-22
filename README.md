@@ -55,3 +55,28 @@ sleep 5 && curl -s "[http://127.0.0.1:9200/siem-events-*/_search?pretty](http://
 # 5. Oprește containerele și șterge secretele temporare
 docker compose -f infra/docker-compose.yml down && rm -f infra/.env
 ```
+
+### Rezultat Așteptat (Exemplu Validare E2E)
+La rularea pasului 4 (`_search`), OpenSearch returnează evenimentul îmbogățit automat cu datele Shodan (porturi, servicii CPE, CVE-uri și tag-uri de risc):
+
+```json
+{
+  "_index": "siem-events-2026.11.22",
+  "_source": {
+    "source": { "ip": "10.0.1.15" },
+    "destination": { "ip": "45.33.32.156", "port": 4444 },
+    "tags": ["shodan_vuln_detected", "misp_shodan_enriched"],
+    "threat": {
+      "enrich": {
+        "shodan": {
+          "ip": "45.33.32.156",
+          "hostnames": ["scanme.nmap.org"],
+          "ports": [22, 80, 123, 9929],
+          "cpes": ["cpe:/a:openbsd:openssh:6.6.1p1", "cpe:/a:apache:http_server:2.4.7"],
+          "vulns": ["CVE-2023-25690", "CVE-2024-38476", "..."]
+        }
+      }
+    }
+  }
+}
+```
