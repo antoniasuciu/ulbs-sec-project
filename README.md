@@ -21,3 +21,4 @@ Toți pașii arhitecturali, operaționali și de securitate au fost implementaț
 - **Stocare și Vizualizare (`infra/docker-compose.yml`):** OpenSearch indexează evenimentele îmbogățite în indecși zilnici (`siem-events-YYYY.MM.DD`), accesibili pentru analiză vizuală la `http://localhost:5601`.
 - **Detection-as-Code (`detection/`):** Reguli standardizate **Sigma** pentru detectarea comunicațiilor suspecte (ex. C2), validate automat prin teste unitare în Python.
 ```
+```
