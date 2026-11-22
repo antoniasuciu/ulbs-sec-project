@@ -1,0 +1,14 @@
+[
+  {
+    "event_id": "evt-001-malicious",
+    "source": {"ip": "10.0.1.15"},
+    "destination": {"ip": "45.33.32.156", "port": 4444},
+    "tags": ["shodan_vuln_detected", "misp_shodan_enriched"]
+  },
+  {
+    "event_id": "evt-002-benign",
+    "source": {"ip": "10.0.1.20"},
+    "destination": {"ip": "8.8.8.8", "port": 53},
+    "tags": ["misp_shodan_enriched"]
+  }
+]

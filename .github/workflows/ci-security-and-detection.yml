@@ -1,0 +1,52 @@
+name: Security Governance & Detection CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ feat/* ]
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Gitleaks Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  iac-security-audit:
+    name: Docker Compose Security Audit (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run Checkov on infra/
+        uses: bridgecrewio/checkov-action@f3e8c033642661c771855068186c252931523953 # v12.2900.0
+        with:
+          directory: infra/
+          framework: docker_compose
+          soft_fail: false
+
+  detection-validation:
+    name: Validate Sigma Rules & Detection Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a28 # v5.3.0
+        with:
+          python-version: '3.12'
+      - name: Install dependencies and run detection tests
+        run: |
+          pip install pyyaml
+          python3 detection/tests/test_detection.py
