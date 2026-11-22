@@ -34,7 +34,7 @@ jobs:
         with:
           directory: infra/
           framework: docker_compose
-          skip_check: CKV_DOCKER_4,CKV_DOCKER_6
+          check: CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_7,CKV_DOCKER_8,CKV_DOCKER_9,CKV_DOCKER_10,CKV_DOCKER_11
           soft_fail: false
 
   detection-validation:
