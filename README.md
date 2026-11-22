@@ -22,3 +22,36 @@ Toți pașii arhitecturali, operaționali și de securitate au fost implementaț
 - **Detection-as-Code (`detection/`):** Reguli standardizate **Sigma** pentru detectarea comunicațiilor suspecte (ex. C2), validate automat prin teste unitare în Python.
 ```
 ```
+
+---
+
+## 4. Controale de Securitate și Guvernanță
+1. **Container Hardening:** Rețea Docker izolată (`siem-net`), `cap_drop: [ALL]`, `no-new-privileges: true` și limite RAM.
+2. **Zero-Trust Secret Management:** Chei API criptate cu **SOPS + `age`** în `infra/secrets.enc.env`.
+3. **CI/CD Security Gates:** Pre-commit hooks (`no-commit-to-branch`, `gitleaks`) și GitHub Actions (SHA-pinned) cu **Gitleaks**, **Checkov** și **Sigma Validation**.
+4. **Guvernanță AI & Arhitectură:** Guardrails în `GEMINI.md` și `.gemini/settings.json`, decizii în `memory/architecture-decisions.md` (`memory/MEMORY.md`), riscuri în `RISK_REGISTER.md` și runbook în `skills/verify-stack/SKILL.md`.
+
+---
+
+## 5. Ghid de Rulare și Validare (Runbook)
+
+> **Notă pentru evaluator / profesor:** Pentru a rula local fără cheia privată `age` a autorului, creați temporar `infra/.env` cu propria cheie API Shodan (`echo "SHODAN_API_KEY=<CHEIA_TA>" > infra/.env`) în locul decriptării SOPS de la pasul 2.
+
+```bash
+# 1. Validează regulile de detecție Sigma (Detection-as-Code)
+python3 detection/tests/test_detection.py
+
+# 2. Decriptează secretele și pornește stack-ul SIEM
+SOPS_AGE_KEY_FILE=~/.age-sec-project.key sops --decrypt infra/secrets.enc.env > infra/.env
+docker compose --file infra/docker-compose.yml --env-file infra/.env up -d
+
+# 3. Așteaptă 25s pentru inițializarea OpenSearch, apoi trimite un eveniment simulat
+sleep 25
+curl -X POST [http://127.0.0.1:8080](http://127.0.0.1:8080) -H "Content-Type: application/json" -d '{"source":{"ip":"10.0.1.15"},"destination":{"ip":"45.33.32.156","port":4444}}'
+
+# 4. Verifică documentul îmbogățit cu date Shodan în OpenSearch
+sleep 5 && curl -s "[http://127.0.0.1:9200/siem-events-*/_search?pretty](http://127.0.0.1:9200/siem-events-*/_search?pretty)"
+
+# 5. Oprește containerele și șterge secretele temporare
+docker compose -f infra/docker-compose.yml down && rm -f infra/.env
+```
