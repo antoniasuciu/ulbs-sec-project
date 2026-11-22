@@ -36,7 +36,7 @@ jobs:
       - name: Install and run Checkov on infra/
         run: |
           pip install checkov
-          checkov -d infra/ --framework docker_compose --check CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_7,CKV_DOCKER_8,CKV_DOCKER_9,CKV_DOCKER_10,CKV_DOCKER_11
+          checkov -d infra/ --framework yaml --check CKV_DOCKER_1,CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_7,CKV_DOCKER_8,CKV_DOCKER_9,CKV_DOCKER_10,CKV_DOCKER_11
 
   detection-validation:
     name: Validate Sigma Rules & Detection Tests
